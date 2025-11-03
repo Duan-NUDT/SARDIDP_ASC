@@ -7,7 +7,7 @@ python train_single.py
 
 Then in the second step, use the pre-trained model from the first step to assist in the training of SAR images.
 
-python SAR_
+python SAR_train_with_wjdata12.py
 ### dataset:
 Please click this link: [baidupan](https://pan.baidu.com/s/1VzAKtM-6uERQSUDVGUIzXg?pwd=1111)
 
