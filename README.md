@@ -1,5 +1,10 @@
-# SARDIDP_ASC
+# Self-Supervised SAR Despeckling by Integrating Denoiser Prior with Attributed Scattering Center(SARDIDP_ASC)
 
+This repository is the official PyTorch implementation of SARDIDP_ASC.
+
+---
+
+> Deep learning has become the mainstream approach for SAR image despeckling. However, the lack of speckle-free SAR images poses a significant challenge for supervised deep learning methods. To overcome this limitation, we propose a self-supervised SAR despeckling method that leverages a denoiser prior and attributed scattering centers to enhance the training process. Specifically, we use the output of an external denoiser as a pseudo-label for despeckling, while spatially correlated speckle noise in SAR images is decorrelated through random downsampling. The network is then updated by optimizing the similarity between its output and the pseudo-label. Additionally, an attributed scattering center map is introduced to help the network recognize strong scatterers and better preserve image details. Experiments on both synthetic and real SAR datasets demonstrate that our method outperforms existing despeckling approaches.
 
 ## Requirements
 - pip install -r requirements.txt
