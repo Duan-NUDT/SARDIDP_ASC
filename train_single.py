@@ -16,7 +16,7 @@ from Unet_single import Unet_single
 from unet_parts import inconv, down, up
 from torch.optim import SGD
 from torch.optim.lr_scheduler import LambdaLR
-
+from add_noise import add_gamma3
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -49,29 +49,6 @@ tran_pose = torchvision.transforms.Compose([                                #对
 ])
 
 
-# 对图像进行加噪
-class add_gamma3:
-    def add_gamma3(self, img):
-        clean = (img*255.0+1)/256.0
-        clean = clean * clean
-        L_list = [1.0 ,2.0,4.0,6.0,8.0,10.0]
-        L_s = random.sample(L_list,1)
-        L   = L_s[0]
-        # L = 1.0
-        m = torch.distributions.gamma.Gamma(torch.tensor([L]), torch.tensor([L]))
-        b = m.sample(sample_shape=img.size()).cuda()
-        noise = b.view_as(img)
-        # print(torch.max(c))
-        intensity = noise * clean
-        # noise_img =torch.sqrt(c * clean)
-        # clean2 = torch.sqrt(clean)
-        noise_img = torch.sqrt(intensity)
-        return intensity, noise_img
-
-add_gamma3 = add_gamma3()
-
-
-# 对数据集路径进行处理
 class MyDataset(Dataset):
     def __init__(self, root_dir, label_dir):
         super().__init__()
@@ -116,7 +93,7 @@ test_data_load = DataLoader(dataset=test_dataset, batch_size = 1,  shuffle=True,
 
 # 假设模型和优化器已经定义
 
-optim = torch.optim.SGD(Unet.parameters(), lr=1.0)  # 初始学习率设置为1e-4
+optim = torch.optim.adam(Unet.parameters(), lr=1.0)  # 初始学习率设置为1e-4  
 
 # 定义学习率衰减函数
 def lr_lambda(i):
@@ -128,11 +105,6 @@ def lr_lambda(i):
 # 创建调度器
 scheduler = LambdaLR(optim, lr_lambda)
 
-# # 训练循环
-# for epoch in range(100):  # 假设总训练100个epoch
-#     # 训练模型...
-#     optimizer.step()
-#     scheduler.step()  # 更新学习率
 
 train_dataset_size = len(train_dataset)
 test_dataset_size  = len(test_dataset)
@@ -145,19 +117,8 @@ loss_fn = nn.MSELoss()  #L2-损失 均方误差
 loss_fn = loss_fn.to(device)
 train_loss = list()
 
-# loss_fn = nn.CrossEntropyLoss()
-# loss_fn = loss_fn.to(device)
-
-# criterionL1 = torch.nn.L1Loss()
-# criterionL2 = torch.nn.MSELoss()
-
-
-# learning_rate = 1e-3
-# optim = torch.optim.Adam(Unet.parameters(), learning_rate)
-
 train_step = 0   #训练次数
 epoch = 100
-#epochs = epoch * train_dataset_size
 flag = 0
 intensity = 0
 lr_history = []
@@ -192,32 +153,14 @@ if __name__ == '__main__':
         current_lr = optim.param_groups[0]['lr']
         lr_history.append(current_lr)
         print(f"End of Epoch {i + 1}: Current Learning Rate: {current_lr}")
-        # Unet.eval()
-        # accuracy = 0
-        # accuracy_total = 0
-        # with torch.no_grad():
-        #     for data in test_data_load:
-        #         imgs, targets = data
-        #         imgs = imgs.to(device)
-        #         targets = targets.to(device)
-        #
-        #         outputs = Unet(imgs)
-        #         # accuracy = (outputs.argmax(axis=1) == imgs).sum()
-        #         # accuracy_total += accuracy
         print(f'第{i + 1}轮训练结束')
-        # print(f'第{i + 1}轮训练结束，准确率{accuracy_total/test_dataset_size}')
         flag = flag + 1
         if flag % (0.2 * epoch) == 0:
             # Img = Image.fromarray(cv.cvtColor(imgs, cv2.COLOR_BGR2RGB))
             torch.save(Unet, f'imgs_lr_gai_single_{i + 1}.pt')
-        #torch.save(Unet, f'ants_bees_{i+1}_acc_{accuracy_total/test_dataset_size}')
-        # # 保存
-        # torch.save(the_model, PATH)
-        # # 读取
-        # the_model = torch.load(PATH)
 
     plot(train_loss)
-    # print(datetime.datetime.now())
+
 
 
 
