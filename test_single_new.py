@@ -34,26 +34,6 @@ tran_pose = torchvision.transforms.Compose([  # 对图片裁剪进行处理 此�
 
 ])
 
-# 对图像进行加噪
-class add_gamma3:
-    def add_gamma3(self, img):
-        clean = (img * 255.0 + 1) / 256.0
-        clean = clean * clean
-        L_list = [1.0, 2.0, 4.0, 6.0, 8.0, 10.0]
-        L_s = random.sample(L_list, 1)
-        L = L_s[0]
-        L = 10.0
-        m = torch.distributions.gamma.Gamma(torch.tensor([L]), torch.tensor([L]))
-        b = m.sample(sample_shape=img.size()).cuda()
-        noise = b.view_as(img)
-        # print(torch.max(c))
-        intensity = noise * clean
-        # noise_img =torch.sqrt(c * clean)
-        # clean2 = torch.sqrt(clean)
-        noise_img = torch.sqrt(intensity)
-        return intensity, noise_img
-
-add_gamma3 = add_gamma3()
 
 data_dir = {'train': 'data/train', 'test': 'data/test'}
 
@@ -92,6 +72,7 @@ if __name__ == '__main__':
     print("ssim=", ssim)
     print("psnr=", psnr)
     # print(f'In epoch {e}, average training loss is {avg_train_loss}, average training acc is {avg_train_acc}.')
+
 
 
 
