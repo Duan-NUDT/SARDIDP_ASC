@@ -32,30 +32,6 @@ tran_pose1 = torchvision.transforms.Compose([                                #�
 Unet = torch.load('Sar_Detach_model/Sar_complex_asc_guang_alpha_0.5_shuffle_D.detach_100.pt', map_location=torch.device('cpu'))
 Unet = Unet.cuda()
 
-def downsample_tensor(img, flag):
-    img = torch.squeeze(img)
-    img = torch.squeeze(img)
-    height = img.shape[0]
-    weight = img.shape[1]
-    num_h = int(height / flag)
-    num_w = int(weight / flag)
-
-    # 存储降采样后的结果
-    tensor_downsampled = torch.zeros(num_h, num_w)
-    for i in range(num_h):
-        for j in range(num_w):
-            start_row = i * flag
-            start_col = j * flag
-            random_row = start_row + torch.randint(0, flag, (1,)).item()
-            random_col = start_col + torch.randint(0, flag, (1,)).item()
-            # 将选取的像素赋值给降采样后的张量
-            tensor_downsampled[i, j] = img[random_row, random_col]
-    tensor_downsampled = torch.unsqueeze(tensor_downsampled,dim=0)
-    tensor_downsampled = torch.unsqueeze(tensor_downsampled,dim=0)
-    return tensor_downsampled
-
-
-
 
 # 第一部分内容，读取npy文件  shape 128*128 单通道灰度图
 depthmap = np.load(r'C:\Users\huang\Desktop\t.npy')
@@ -79,16 +55,6 @@ for i in range(num_h):
         x = j*flag - temp
         new_data[j, i] = data[x, y]
 downsampled = new_data
-# plt.imshow画图对图像的要求通道数是（h, w, c），如果是chw格式需要进行维度permute调换
-# plt.figure(1)
-# plt.imshow(data, cmap='gray')
-# # plt.show()
-# mod = downsampled.reshape(1,num_h,num_w)
-# out = torch.from_numpy(mod).float()
-# out = max_pool(out)
-
-
-
 
 
 
@@ -111,31 +77,6 @@ def test_plot1(noise_img):
     plt.show()
     plt.ylabel(f'tu')
 
-
-def shuffle_img(img, patch_size):
-    img2 = torch.zeros_like(img)
-    height, width = img2.shape[2], img2.shape[3]
-    num_h = int(height / patch_size)
-    num_w = int(width / patch_size)
-    num = num_h * num_w
-    lista = range(num)
-    list1 = random.sample(lista, num)
-    for i in range(num):
-        h_ind1 = int(i / num_h)
-        w_ind1 = i % num_w
-        j = list1[i]
-        h_ind2 = int(j / num_h)
-        w_ind2 = j % num_w
-
-        img2[:, :, h_ind1 * patch_size:(h_ind1 + 1) * patch_size, w_ind1 * patch_size:(w_ind1 + 1) * patch_size] = img[
-                                                                                                                   :, :,
-                                                                                                                   h_ind2 * patch_size:(
-                                                                                                                                                   h_ind2 + 1) * patch_size,
-                                                                                                                   w_ind2 * patch_size:(
-                                                                                                                                                   w_ind2 + 1) * patch_size]
-    return img2
-
-
 if __name__ == '__main__':
     Unet.eval()
     accuracy = 0
@@ -144,7 +85,7 @@ if __name__ == '__main__':
     total_ssim = 0
     with torch.no_grad():
         # 输入图像shape要求是tensor （b, c, h, w）
-            img = Image.open('data/Mstar128/2S1/HB14931.JPG')
+            img = Image.open('data/test.JPG')
             # img = Image.open('BSD300/gt_uint8/0.png')
             transform = torchvision.transforms.Compose([
                 torchvision.transforms.Grayscale(1),
@@ -153,22 +94,13 @@ if __name__ == '__main__':
             flag = 2
             img = transform(img)
             imgs = torch.unsqueeze(img,dim=0)
-            image = shuffle_img(imgs, patch_size=8)
-            # img_down = downsample_tensor(img, flag)
-            # imgs = img_down
-            # imgs = out
-            # imgs = imgs.unsqueeze(0)
-            # imgs, targets = data
             imgs = imgs.to(device)
-
             outputs = Unet(imgs)
-
             plt.figure(2)
             test_plot(imgs)
             # test_plot(noise_img)
             plt.figure(3)
             test_plot1(outputs)
-            imgs = imgs.cpu().numpy()
 
 
 
