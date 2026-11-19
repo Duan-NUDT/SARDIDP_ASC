@@ -29,7 +29,7 @@ tran_pose1 = torchvision.transforms.Compose([                                #�
 # 从文件夹中将SAR图像进行读取
 # SAR图像成像后的数据一般保存的格式是uint16 像素值取值范围是0-65535 日常所见到的图像一般是uint8格式的，像素值范围是0-255
 
-Unet = torch.load('Sar_Detach_model/Sar_complex_asc_guang_alpha_0.5_shuffle_D.detach_100.pt', map_location=torch.device('cpu'))
+Unet = torch.load('Sar_model/Sar_complex.pt', map_location=torch.device('cpu'))
 Unet = Unet.cuda()
 
 
